@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Prints each work item's status. Status is never stored: it is which
+# artifacts have merged to main, plus whatever PRs are open.
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+git fetch --quiet origin main
+on_main() { git cat-file -e "origin/main:$1" 2>/dev/null; }
+
+dirs=$(git ls-tree -d --name-only origin/main intent/)
+[[ -n $dirs ]] || echo "No work items on main yet."
+for dir in $dirs; do
+  if on_main "$dir/plan.md"; then s=done
+  elif on_main "$dir/spec.md"; then s=ready-to-build
+  else s=intent-accepted
+  fi
+  printf '%-40s %s\n' "${dir#intent/}" "$s"
+done
+
+if command -v gh >/dev/null; then
+  echo
+  echo "In flight (open PRs):"
+  gh pr list --state open --json number,title \
+    --template '{{range .}}  #{{.number}} {{.title}}{{"\n"}}{{end}}'
+fi
