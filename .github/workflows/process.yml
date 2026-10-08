@@ -1,0 +1,24 @@
+name: process
+
+# No paths filter: `process` is a required check, and a required check that
+# never reports leaves the PR waiting forever.
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    steps:
+      # The checkout is the PR merge commit; depth 2 brings in the base as HEAD^1.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      - run: scripts/check-work-items
+      # The title arrives through env so it can't inject shell.
+      - run: scripts/check-pr "$TITLE"
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
