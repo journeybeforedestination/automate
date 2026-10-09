@@ -76,7 +76,7 @@ Show the branch, the PR title `build: NNNN-slug`, and a PR body: two to four lin
 what was built, links to the work item's files, and the test output summary. Then ask
 **"Push and open the PR?"**
 
-- Yes: `git push -u origin build/NNNN-slug`, then
+- Yes: `git push`, then
   `gh pr create --title "build: NNNN-slug" --body-file <tmpfile>`, and print the URL.
 - No: print those two commands for the user to run.
 

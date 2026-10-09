@@ -68,7 +68,9 @@ the same commit. Claude runs the tests and shows the output before it says it's 
 
 **Every skill ends by asking "Push and open the PR?"** If you say yes, it pushes the branch
 and opens the PR with a drafted title and body. If you say no, it prints the two commands
-for you to run.
+for you to run. The push is a plain `git push`, which needs
+`git config --global push.autoSetupRemote true` set once on your machine. Pushing with
+`-u` would have Claude write to `.git/config`, which its sandbox doesn't allow.
 
 ### Bugs
 
