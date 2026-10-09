@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Checks every work item under intent/ against the stage templates.
+# The templates in .claude/skills/<stage>/template.md are the single source
+# of truth for headings, so changing a template forces existing work items
+# to be migrated in the same PR.
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+[[ -d intent ]] || exit 0
+
+status=0
+err() { printf 'error: %s\n' "$*" >&2; status=1; }
+headings() { grep '^## ' "$1" || true; }
+declare -A stage_of=([intent.md]=intent [spec.md]=spec [plan.md]=build)
+numbers=()
+
+shopt -s nullglob
+for dir in intent/*/; do
+  dir=${dir%/}
+  id=${dir#intent/}
+  if [[ ! $id =~ ^[0-9]{4}-[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+    err "$dir: folder name must be NNNN-slug (four digits, lowercase, hyphens)"
+    continue
+  fi
+  numbers+=("${id:0:4}")
+
+  if [[ ! -f $dir/intent.md ]]; then err "$dir: missing intent.md"; fi
+  if [[ -f $dir/plan.md && ! -f $dir/spec.md ]]; then err "$dir: plan.md needs spec.md"; fi
+
+  for file in intent.md spec.md plan.md; do
+    if [[ ! -f $dir/$file ]]; then continue; fi
+    template=.claude/skills/${stage_of[$file]}/template.md
+    if [[ $(headings "$dir/$file") != "$(headings "$template")" ]]; then
+      err "$dir/$file: '## ' headings must match $template exactly:"$'\n'"$(headings "$template")"
+    fi
+  done
+done
+
+dupes=$(printf '%s\n' "${numbers[@]}" | sort | uniq -d)
+if [[ -n $dupes ]]; then err "work item numbers used more than once: $dupes"; fi
+
+exit $status

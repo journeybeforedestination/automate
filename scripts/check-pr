@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Checks that a PR only changes what its stage allows, so that the files on
+# main stay a truthful record of each work item's status.
+# CI runs it on the PR merge commit, where HEAD^1 is the base branch. Locally,
+# compare a branch with main using BASE=origin/main.
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+title=${1:?usage: [BASE=origin/main] scripts/check-pr "<pr title>"}
+base=${BASE:-HEAD^1}
+fail() { printf 'error: %s\n' "$*" >&2; exit 1; }
+on_base() { git cat-file -e "$base:$1" 2>/dev/null; }
+
+mapfile -t changed < <(git diff --name-only --no-renames "$base"...HEAD)
+
+if [[ $title =~ ^chore:\ .+ ]]; then
+  for f in "${changed[@]}"; do
+    [[ $f != intent/* ]] || fail "chore PRs may not change intent/ (found $f)"
+  done
+  exit 0
+fi
+
+[[ $title =~ ^(intent|spec|build):\ ([0-9]{4}-[a-z0-9]+(-[a-z0-9]+)*)$ ]] || fail "PR title must be one of:
+  intent: NNNN-slug
+  spec: NNNN-slug
+  build: NNNN-slug
+  chore: <summary>"
+stage=${BASH_REMATCH[1]}
+dir=intent/${BASH_REMATCH[2]}
+
+case $stage in
+  intent)
+    allowed=("$dir/intent.md") ;;
+  spec)
+    on_base "$dir/intent.md" || fail "$dir/intent.md is not on the base branch; merge its intent PR first"
+    allowed=("$dir/intent.md" "$dir/spec.md") ;;
+  build)
+    on_base "$dir/spec.md" || fail "$dir/spec.md is not on the base branch; merge its spec PR first"
+    [[ -f $dir/plan.md ]] || fail "build PRs must add $dir/plan.md" ;;
+esac
+
+for f in "${changed[@]}"; do
+  if [[ $stage == build ]]; then
+    [[ $f != intent/* || $f == "$dir"/* ]] || fail "build PRs may only change their own work item under intent/ (found $f)"
+  else
+    [[ " ${allowed[*]} " == *" $f "* ]] || fail "$stage PRs may only change ${allowed[*]} (found $f)"
+  fi
+done
