@@ -67,7 +67,7 @@ Show the branch, the PR title `spec: NNNN-slug`, and a PR body: two to four line
 summarising the requirements and any concerns that need a decision, plus a link to the
 file. Then ask **"Push and open the PR?"**
 
-- Yes: `git push -u origin spec/NNNN-slug`, then
+- Yes: `git push`, then
   `gh pr create --title "spec: NNNN-slug" --body-file <tmpfile>`, and print the URL.
 - No: print those two commands for the user to run.
 

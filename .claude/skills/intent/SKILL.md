@@ -72,7 +72,7 @@ Show the branch, the PR title `intent: NNNN-slug`, and a PR body: two to four li
 summarising the problem and outcome, plus a link to the file. Then ask
 **"Push and open the PR?"**
 
-- Yes: `git push -u origin intent/NNNN-slug`, then
+- Yes: `git push`, then
   `gh pr create --title "intent: NNNN-slug" --body-file <tmpfile>`, and print the URL.
 - No: print those two commands for the user to run.
 
