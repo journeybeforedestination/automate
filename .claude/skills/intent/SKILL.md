@@ -13,7 +13,22 @@ the problem. Closing the PR unmerged means it was rejected.
 
 The idea to start from: $ARGUMENTS
 
-## 1. Interview
+## 1. Start on main
+
+```bash
+git status --short --branch
+```
+
+If the branch isn't `main`, or there are uncommitted changes, stop and tell the user:
+
+> You're on `<branch>`. Commit or stash that work, run `git switch main && git pull`,
+> then run `/intent` again.
+
+Don't switch for them. The usual cause is still sitting on another stage's branch, and
+its PR may still need their fixes. Checking now saves an interview that can't be
+committed.
+
+## 2. Interview
 
 Talk with the originator like an analyst before writing anything. Ask about who is
 affected, what they do today, what "solved" looks like, and what must not change. Use
@@ -23,7 +38,7 @@ section of [template.md](template.md) without guessing.
 Intent is the problem, not the solution. If the conversation drifts into design, write
 that down as an open question or a constraint and move on. The spec stage decides how.
 
-## 2. Pick the number and branch
+## 3. Pick the number and branch
 
 ```bash
 git fetch origin
@@ -38,7 +53,7 @@ there are none). The slug is short, lowercase and hyphenated. Then:
 git switch -c intent/NNNN-slug origin/main
 ```
 
-## 3. Write and commit
+## 4. Write and commit
 
 Copy [template.md](template.md) to `intent/NNNN-slug/intent.md`, set the title, and fill
 every section. Keep the `##` headings exactly as they are, because CI compares them with
@@ -51,7 +66,7 @@ git add intent/NNNN-slug/intent.md
 git commit -m "Propose intent NNNN-slug"
 ```
 
-## 4. Handoff
+## 5. Handoff
 
 Show the branch, the PR title `intent: NNNN-slug`, and a PR body: two to four lines
 summarising the problem and outcome, plus a link to the file. Then ask
@@ -62,3 +77,6 @@ summarising the problem and outcome, plus a link to the file. Then ask
 - No: print those two commands for the user to run.
 
 Never push or open a PR without that yes.
+
+End by telling the user that once the PR is merged, `git switch main && git pull`
+brings the intent onto their main, ready for `/spec NNNN`.
