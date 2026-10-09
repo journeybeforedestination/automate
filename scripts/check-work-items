@@ -14,6 +14,7 @@ headings() { grep '^## ' "$1" || true; }
 declare -A stage_of=([intent.md]=intent [spec.md]=spec [plan.md]=build)
 numbers=()
 
+shopt -s nullglob
 for dir in intent/*/; do
   dir=${dir%/}
   id=${dir#intent/}
