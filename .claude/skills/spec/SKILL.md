@@ -14,6 +14,18 @@ the design is accepted and Build may start.
 ## 1. Start from main
 
 ```bash
+git status --short --branch
+```
+
+If the branch isn't `main`, or there are uncommitted changes, stop and tell the user:
+
+> You're on `<branch>`. Commit or stash that work, run `git switch main && git pull`,
+> then run `/spec` again.
+
+Don't switch for them. The usual cause is still sitting on the last stage's branch, and
+its PR may still need their fixes.
+
+```bash
 git fetch origin
 git ls-tree --name-only origin/main intent/ | grep '^intent/NNNN-'
 git switch -c spec/NNNN-slug origin/main
@@ -60,3 +72,6 @@ file. Then ask **"Push and open the PR?"**
 - No: print those two commands for the user to run.
 
 Never push or open a PR without that yes.
+
+End by telling the user that once the PR is merged, `git switch main && git pull`
+brings the spec onto their main, ready for `/build NNNN`.

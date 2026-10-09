@@ -14,6 +14,18 @@ Merging it with CI green means the work item is done.
 ## 1. Start from main
 
 ```bash
+git status --short --branch
+```
+
+If the branch isn't `main`, or there are uncommitted changes, stop and tell the user:
+
+> You're on `<branch>`. Commit or stash that work, run `git switch main && git pull`,
+> then run `/build` again.
+
+Don't switch for them. The usual cause is still sitting on the last stage's branch, and
+its PR may still need their fixes.
+
+```bash
 git fetch origin
 git ls-tree --name-only origin/main intent/ | grep '^intent/NNNN-'
 git switch -c build/NNNN-slug origin/main
@@ -69,3 +81,6 @@ what was built, links to the work item's files, and the test output summary. The
 - No: print those two commands for the user to run.
 
 Never push or open a PR without that yes.
+
+End by telling the user that once the PR is merged, `git switch main && git pull`
+puts them back on main, ready for the next work item.
